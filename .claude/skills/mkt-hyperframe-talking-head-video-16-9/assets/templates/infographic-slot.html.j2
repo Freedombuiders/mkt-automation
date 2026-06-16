@@ -1,0 +1,18 @@
+{# Optional infographic <img> slot with onerror fallback. The script
+   `scaffold_infographic_slots.py` injects this near the end of each
+   composition's <body> (just before </template>). If the PNG is missing,
+   onerror hides the element silently — composition still renders fine.
+
+   Vars: scene_num (1-based), top, right, width, height, opacity.
+#}
+    <img class="infographic-slot" src="../infographics/{{ scene_num }}.png"
+         onerror="this.style.display='none'"
+         style="position:absolute;
+                top: {{ top | default('80px') }};
+                right: {{ right | default('80px') }};
+                width: {{ width | default('320px') }};
+                height: {{ height | default('320px') }};
+                border-radius: 20px;
+                opacity: {{ opacity | default('0.92') }};
+                pointer-events: none;
+                z-index: 6;" />

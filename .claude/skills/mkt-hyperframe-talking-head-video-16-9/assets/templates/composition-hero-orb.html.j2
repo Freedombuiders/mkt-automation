@@ -1,0 +1,127 @@
+{# hero-orb pattern — Solution (1 orb + 3 specs tier-row).
+   Vars: id, kicker, heading_words, eyebrow_color, orb_label, task_items[{icon,label}],
+         ingest_tag, specs[{letter,title,sub,icon}], orb_logo (optional path).
+   `orb_logo` (optional) — brand logo path inside the orb (e.g. assets/logos/claude.png).
+#}
+<template id="{{ id }}-template">
+  <div data-composition-id="{{ id }}" data-start="0" data-width="1200" data-height="1080">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      [data-composition-id="{{ id }}"] { width: 100%; height: 100%; background: #000; color: #f5f7fa; position: relative; overflow: hidden; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+      [data-composition-id="{{ id }}"] .bg-glow {
+        position: absolute; inset: 0; z-index: 0;
+        background:
+          radial-gradient(ellipse 700px 500px at 30% 50%, rgba(167,139,250,0.12), transparent 60%),
+          radial-gradient(ellipse 600px 400px at 80% 30%, rgba(103,232,249,0.10), transparent 60%);
+      }
+      [data-composition-id="{{ id }}"] .stage { position: relative; z-index: 5; width: 100%; height: 100%; padding: 130px 70px 80px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; }
+      [data-composition-id="{{ id }}"] .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: {{ eyebrow_color | default('#a78bfa') }}; display: inline-flex; align-items: center; gap: 12px; align-self: flex-start; }
+      [data-composition-id="{{ id }}"] .eyebrow .live { width: 8px; height: 8px; border-radius: 50%; background: {{ eyebrow_color | default('#a78bfa') }}; box-shadow: 0 0 12px {{ eyebrow_color | default('#a78bfa') }}; }
+      [data-composition-id="{{ id }}"] .title { font-weight: 800; font-size: 68px; line-height: 0.96; letter-spacing: -0.035em; margin: 0; will-change: transform, opacity; }
+      [data-composition-id="{{ id }}"] .title .word { display: inline-block; margin-right: 0.18em; will-change: transform, opacity; }
+      [data-composition-id="{{ id }}"] .title .grad-v { background: linear-gradient(135deg, #a78bfa, #f0abfc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+      [data-composition-id="{{ id }}"] .hero-row {
+        display: grid; grid-template-columns: 180px 1fr; gap: 24px; align-items: center;
+        background: rgba(15, 20, 30, 0.55);
+        border: 1.5px solid rgba(167, 139, 250, 0.40);
+        border-radius: 20px; padding: 18px 22px;
+        backdrop-filter: blur(14px);
+        box-shadow: 0 0 32px rgba(167, 139, 250, 0.15), inset 0 1px 0 rgba(255,255,255,0.04);
+        will-change: transform, opacity;
+      }
+      [data-composition-id="{{ id }}"] .orb-cell { display: flex; align-items: center; justify-content: center; position: relative; }
+      [data-composition-id="{{ id }}"] .orb {
+        width: 130px; height: 130px; border-radius: 50%;
+        background: radial-gradient(circle at 32% 30%, #ffffff, #a78bfa 28%, #67e8f9 64%, #f0abfc 100%);
+        box-shadow: 0 0 50px rgba(167,139,250,0.65), inset -16px -16px 32px rgba(0,0,0,0.30);
+        position: relative; will-change: transform, opacity;
+        display: flex; align-items: center; justify-content: center;
+      }
+      [data-composition-id="{{ id }}"] .orb img {
+        width: 78px; height: 78px; object-fit: contain;
+        filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+        position: relative; z-index: 2;
+      }
+      [data-composition-id="{{ id }}"] .orb::after { content: ""; position: absolute; top: 16%; left: 22%; width: 32%; height: 22%; border-radius: 50%; background: rgba(255,255,255,0.6); filter: blur(8px); z-index: 1; }
+      [data-composition-id="{{ id }}"] .hero-content { display: flex; flex-direction: column; gap: 10px; }
+      [data-composition-id="{{ id }}"] .hero-label { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #a78bfa; }
+      [data-composition-id="{{ id }}"] .task-items { display: flex; gap: 14px; }
+      [data-composition-id="{{ id }}"] .task-items .item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+      [data-composition-id="{{ id }}"] .task-items .ic { width: 56px; height: 56px; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; background: rgba(167,139,250,0.10); border: 1px solid rgba(167,139,250,0.30); border-radius: 13px; filter: drop-shadow(0 0 8px rgba(167,139,250,0.35)); }
+      [data-composition-id="{{ id }}"] .task-items .lb { font-size: 12px; color: #c4cad6; font-weight: 500; }
+      [data-composition-id="{{ id }}"] .ingest-tag { display: inline-flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: #a78bfa; padding: 5px 12px; border: 1px solid rgba(167,139,250,0.40); background: rgba(167,139,250,0.08); border-radius: 8px; letter-spacing: 0.06em; align-self: flex-start; }
+
+      [data-composition-id="{{ id }}"] .specs { display: flex; flex-direction: column; gap: 12px; }
+      [data-composition-id="{{ id }}"] .tier-row { display: grid; grid-template-columns: 130px 1fr 90px; gap: 18px; align-items: center; background: rgba(15, 20, 30, 0.55); border: 1.5px solid rgba(103, 232, 249, 0.30); border-radius: 18px; padding: 14px 22px; backdrop-filter: blur(14px); box-shadow: 0 0 28px rgba(103, 232, 249, 0.08), inset 0 1px 0 rgba(255,255,255,0.04); will-change: transform, opacity; }
+      [data-composition-id="{{ id }}"] .tier-letter { font-weight: 900; font-size: 56px; letter-spacing: -0.04em; line-height: 1; text-align: center; }
+      [data-composition-id="{{ id }}"] .tier-row.s1 { border-color: rgba(167,139,250,0.40); box-shadow: 0 0 28px rgba(167,139,250,0.12), inset 0 1px 0 rgba(255,255,255,0.04); }
+      [data-composition-id="{{ id }}"] .tier-row.s1 .tier-letter { color: #a78bfa; text-shadow: 0 0 24px rgba(167,139,250,0.85), 0 0 10px rgba(167,139,250,0.6); }
+      [data-composition-id="{{ id }}"] .tier-row.s2 { border-color: rgba(103,232,249,0.40); }
+      [data-composition-id="{{ id }}"] .tier-row.s2 .tier-letter { color: #67e8f9; text-shadow: 0 0 24px rgba(103,232,249,0.85), 0 0 10px rgba(103,232,249,0.6); font-size: 38px; }
+      [data-composition-id="{{ id }}"] .tier-row.s3 { border-color: rgba(163,230,53,0.40); box-shadow: 0 0 28px rgba(163,230,53,0.18), inset 0 1px 0 rgba(255,255,255,0.04); }
+      [data-composition-id="{{ id }}"] .tier-row.s3 .tier-letter { color: #a3e635; text-shadow: 0 0 24px rgba(163,230,53,0.85), 0 0 10px rgba(163,230,53,0.6); }
+      [data-composition-id="{{ id }}"] .tier-content { display: flex; flex-direction: column; gap: 2px; }
+      [data-composition-id="{{ id }}"] .ttl { font-size: 22px; font-weight: 700; color: #f5f7fa; }
+      [data-composition-id="{{ id }}"] .sub { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8b94a8; letter-spacing: 0.05em; }
+      [data-composition-id="{{ id }}"] .icon-cell { font-size: 36px; text-align: center; opacity: 0.85; filter: drop-shadow(0 0 10px currentColor); }
+      [data-composition-id="{{ id }}"] .tier-row.s1 .icon-cell { color: #a78bfa; }
+      [data-composition-id="{{ id }}"] .tier-row.s2 .icon-cell { color: #67e8f9; }
+      [data-composition-id="{{ id }}"] .tier-row.s3 .icon-cell { color: #a3e635; }
+    </style>
+    <div class="bg-glow"></div>
+    <div class="stage">
+      <span class="eyebrow"><span class="live"></span>{{ kicker }}</span>
+      <h1 class="title">
+        {%- for w in heading_words -%}
+        <span class="word{% if w.grad %} grad-v{% endif %}">{{ w.text }}</span>
+        {%- endfor -%}
+      </h1>
+      <div class="hero-row">
+        <div class="orb-cell"><div class="orb">{% if orb_logo %}<img src="{{ orb_logo }}" alt="brand">{% endif %}</div></div>
+        <div class="hero-content">
+          <span class="hero-label">{{ orb_label }}</span>
+          <div class="task-items">
+            {%- for it in task_items -%}
+            <div class="item"><div class="ic">{{ it.icon }}</div><div class="lb">{{ it.label }}</div></div>
+            {%- endfor -%}
+          </div>
+          <div class="ingest-tag">{{ ingest_tag | safe }}</div>
+        </div>
+      </div>
+      <div class="specs">
+        {%- for sp in specs -%}
+        <div class="tier-row s{{ loop.index }}">
+          <div class="tier-letter">{{ sp.letter }}</div>
+          <div class="tier-content">
+            <span class="ttl">{{ sp.title }}</span>
+            <span class="sub">{{ sp.sub }}</span>
+          </div>
+          <div class="icon-cell">{{ sp.icon }}</div>
+        </div>
+        {%- endfor -%}
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const R = '[data-composition-id="{{ id }}"]';
+      tl.from(R + ' .eyebrow', { y: -20, opacity: 0, duration: 0.5, ease: 'power3.out' }, 0.1);
+      tl.from(R + ' .title .word', { y: 40, opacity: 0, scale: 0.85, duration: 0.5, ease: 'back.out(1.6)', stagger: 0.06 }, 0.4);
+      tl.from(R + ' .hero-row', { y: 30, opacity: 0, duration: 0.6, ease: 'power3.out' }, 1.5);
+      tl.from(R + ' .orb', { scale: 0, duration: 0.7, ease: 'back.out(1.4)' }, 1.7);
+      tl.to(R + ' .orb', { scale: 1.04, duration: 1.6, ease: 'sine.inOut', yoyo: true, repeat: 8, transformOrigin: 'center' }, 2.5);
+      tl.from(R + ' .task-items .item', { y: 20, opacity: 0, duration: 0.4, stagger: 0.12 }, 2.4);
+      tl.from(R + ' .ingest-tag', { y: 10, opacity: 0, duration: 0.4 }, 3.4);
+      {%- for sp in specs %}
+      tl.from(R + ' .tier-row.s{{ loop.index }}', { x: 60, opacity: 0, duration: 0.55, ease: 'power3.out' }, {{ 8.0 + (loop.index0 * 3.0) }});
+      tl.from(R + ' .tier-row.s{{ loop.index }} .tier-letter', { scale: 0, opacity: 0, duration: 0.5, ease: 'back.out(1.8)' }, {{ 8.3 + (loop.index0 * 3.0) }});
+      {%- endfor %}
+      window.__timelines["{{ id }}"] = tl;
+    </script>
+{{ infographic_slot | default('') }}
+  </div>
+</template>

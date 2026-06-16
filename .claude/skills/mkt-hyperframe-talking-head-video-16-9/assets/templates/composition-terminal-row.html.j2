@@ -1,0 +1,92 @@
+{# terminal-row pattern — CTA (terminal mockup + 2 gifts).
+   Vars: id, kicker, heading_words, eyebrow_color, big_letter, keyword,
+         gifts[{icon,title,tag}], cta_text.
+#}
+<template id="{{ id }}-template">
+  <div data-composition-id="{{ id }}" data-start="0" data-width="1200" data-height="1080">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      [data-composition-id="{{ id }}"] { width: 100%; height: 100%; background: #000; color: #f5f7fa; position: relative; overflow: hidden; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+      [data-composition-id="{{ id }}"] .bg-glow { position: absolute; inset: 0; z-index: 0; background: radial-gradient(ellipse 700px 500px at 50% 60%, rgba(240,171,252,0.14), transparent 60%), radial-gradient(ellipse 600px 400px at 80% 22%, rgba(167,139,250,0.10), transparent 60%); }
+      [data-composition-id="{{ id }}"] .stage { position: relative; z-index: 5; width: 100%; height: 100%; padding: 130px 70px 80px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; }
+      [data-composition-id="{{ id }}"] .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: {{ eyebrow_color | default('#f0abfc') }}; display: inline-flex; align-items: center; gap: 12px; align-self: flex-start; }
+      [data-composition-id="{{ id }}"] .eyebrow .live { width: 8px; height: 8px; border-radius: 50%; background: {{ eyebrow_color | default('#f0abfc') }}; box-shadow: 0 0 12px {{ eyebrow_color | default('#f0abfc') }}; }
+      [data-composition-id="{{ id }}"] .title { font-weight: 800; font-size: 80px; line-height: 0.96; letter-spacing: -0.035em; margin: 0; will-change: transform, opacity; }
+      [data-composition-id="{{ id }}"] .title .word { display: inline-block; margin-right: 0.18em; will-change: transform, opacity; }
+      [data-composition-id="{{ id }}"] .title .grad-v { background: linear-gradient(135deg, #a78bfa, #f0abfc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+      [data-composition-id="{{ id }}"] .comment-row { display: grid; grid-template-columns: 130px 1fr; gap: 24px; align-items: center; background: rgba(15, 20, 30, 0.55); border: 1.5px solid rgba(240, 171, 252, 0.40); border-radius: 22px; padding: 22px 28px; backdrop-filter: blur(14px); box-shadow: 0 0 36px rgba(240, 171, 252, 0.18), inset 0 1px 0 rgba(255,255,255,0.04); will-change: transform, opacity; }
+      [data-composition-id="{{ id }}"] .tier-letter { font-weight: 900; font-size: 76px; letter-spacing: -0.04em; line-height: 1; text-align: center; color: #f0abfc; text-shadow: 0 0 30px rgba(240,171,252,0.85), 0 0 14px rgba(240,171,252,0.6); }
+      [data-composition-id="{{ id }}"] .terminal { background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; padding: 12px 16px; font-family: 'JetBrains Mono', monospace; }
+      [data-composition-id="{{ id }}"] .terminal .head { display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.10); margin-bottom: 10px; }
+      [data-composition-id="{{ id }}"] .terminal .dot { width: 10px; height: 10px; border-radius: 50%; }
+      [data-composition-id="{{ id }}"] .terminal .dot.r { background: #ff5f56; }
+      [data-composition-id="{{ id }}"] .terminal .dot.y { background: #ffbd2e; }
+      [data-composition-id="{{ id }}"] .terminal .dot.g { background: #27c93f; }
+      [data-composition-id="{{ id }}"] .terminal .lb { margin-left: auto; font-size: 11px; color: #8b94a8; letter-spacing: 0.10em; text-transform: uppercase; font-weight: 600; }
+      [data-composition-id="{{ id }}"] .terminal .row { display: flex; align-items: center; gap: 10px; font-size: 22px; color: #f5f7fa; }
+      [data-composition-id="{{ id }}"] .terminal .prompt { color: #a78bfa; font-weight: 700; }
+      [data-composition-id="{{ id }}"] .terminal .input { color: #f0abfc; font-weight: 700; }
+      [data-composition-id="{{ id }}"] .terminal .cursor { display: inline-block; width: 12px; height: 22px; background: #f0abfc; margin-left: 2px; will-change: opacity; }
+      [data-composition-id="{{ id }}"] .terminal .out { margin-top: 10px; font-size: 14px; color: #b6bdcc; line-height: 1.6; }
+      [data-composition-id="{{ id }}"] .terminal .out b { color: #f5f7fa; font-weight: 700; }
+
+      [data-composition-id="{{ id }}"] .gifts { display: flex; gap: 14px; }
+      [data-composition-id="{{ id }}"] .gift { flex: 1; display: grid; grid-template-columns: 70px 1fr 80px; gap: 14px; align-items: center; padding: 14px 18px; background: rgba(15, 20, 30, 0.55); border: 1.5px solid rgba(103, 232, 249, 0.30); border-radius: 18px; backdrop-filter: blur(14px); box-shadow: 0 0 24px rgba(103, 232, 249, 0.10), inset 0 1px 0 rgba(255,255,255,0.04); will-change: transform, opacity; }
+      [data-composition-id="{{ id }}"] .gift .ic { width: 50px; height: 50px; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; background: rgba(103,232,249,0.10); border: 1px solid rgba(103,232,249,0.30); border-radius: 13px; filter: drop-shadow(0 0 10px rgba(103,232,249,0.35)); justify-self: center; }
+      [data-composition-id="{{ id }}"] .gift .ttl { font-size: 18px; font-weight: 700; color: #f5f7fa; line-height: 1.3; }
+      [data-composition-id="{{ id }}"] .gift .tag { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 800; background: linear-gradient(135deg, #a3e635, #67e8f9); color: #0b0f1a; padding: 6px 12px; border-radius: 7px; letter-spacing: 0.12em; text-align: center; }
+      [data-composition-id="{{ id }}"] .cta-line { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: #f0abfc; letter-spacing: 0.10em; align-self: center; will-change: transform, opacity; }
+    </style>
+    <div class="bg-glow"></div>
+    <div class="stage">
+      <span class="eyebrow"><span class="live"></span>{{ kicker }}</span>
+      <h1 class="title">
+        {%- for w in heading_words -%}
+        <span class="word{% if w.grad %} grad-v{% endif %}">{{ w.text }}</span>
+        {%- endfor -%}
+      </h1>
+      <div class="comment-row">
+        <div class="tier-letter">{{ big_letter }}</div>
+        <div class="terminal">
+          <div class="head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="lb">comment.input</span></div>
+          <div class="row"><span class="prompt">→</span><span class="input" id="ti">{{ keyword }}</span><span class="cursor" id="cur"></span></div>
+          <div class="out">→ Đang gửi cho bạn:<br/><b>· tài nguyên thực tế</b> · <b>prompt + workflow</b></div>
+        </div>
+      </div>
+      <div class="gifts">
+        {%- for g in gifts -%}
+        <div class="gift" id="g{{ loop.index }}"><div class="ic">{{ g.icon }}</div><div class="ttl">{{ g.title | safe }}</div><div class="tag">{{ g.tag }}</div></div>
+        {%- endfor -%}
+      </div>
+      <div class="cta-line">{{ cta_text }}</div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/TextPlugin.min.js"></script>
+    <script>
+      if (window.gsap && window.TextPlugin) gsap.registerPlugin(TextPlugin);
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const R = '[data-composition-id="{{ id }}"]';
+      tl.from(R + ' .eyebrow', { y: -20, opacity: 0, duration: 0.4, ease: 'power3.out' }, 0.05);
+      tl.from(R + ' .title .word', { y: 40, opacity: 0, scale: 0.85, duration: 0.5, ease: 'back.out(1.6)', stagger: 0.05 }, 0.25);
+      tl.from(R + ' .comment-row', { y: 30, opacity: 0, duration: 0.5, ease: 'back.out(1.5)' }, 0.9);
+      tl.from(R + ' .tier-letter', { scale: 0, opacity: 0, duration: 0.5, ease: 'back.out(1.8)' }, 1.1);
+      tl.set(R + ' #ti', { text: '' }, 1.4);
+      tl.to(R + ' #ti', { text: '{{ keyword[:1] }}', duration: 0.18, ease: 'none' }, 1.5);
+      tl.to(R + ' #ti', { text: '{{ keyword }}', duration: 0.18, ease: 'none' }, 1.75);
+      tl.to(R + ' #cur', { opacity: 0, duration: 0.5, ease: 'steps(1)', yoyo: true, repeat: 5 }, 1.5);
+      tl.from(R + ' .terminal .out', { opacity: 0, y: 8, duration: 0.4 }, 2.2);
+      {%- for g in gifts %}
+      tl.from(R + ' #g{{ loop.index }}', { y: 30, scale: 0.9, opacity: 0, duration: 0.5, ease: 'back.out(1.6)' }, {{ 2.6 + (loop.index0 * 0.2) }});
+      {%- endfor %}
+      tl.to(R + ' .gift .tag', { scale: 1.08, duration: 0.6, ease: 'sine.inOut', yoyo: true, repeat: 3, stagger: 0.1, transformOrigin: 'center' }, 3.2);
+      tl.from(R + ' .cta-line', { y: 20, opacity: 0, duration: 0.4 }, 3.3);
+      tl.to(R + ' .cta-line', { y: -8, duration: 0.6, ease: 'sine.inOut', yoyo: true, repeat: 4 }, 3.7);
+      window.__timelines["{{ id }}"] = tl;
+    </script>
+{{ infographic_slot | default('') }}
+  </div>
+</template>

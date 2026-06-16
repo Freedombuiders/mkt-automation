@@ -1,0 +1,137 @@
+{# chats-stack pattern — Problem (multi-AI fail).
+   Vars: id, kicker, heading_words (list of {text, grad}), eyebrow_color,
+         user_text, fail_rows[{name, av, av_letter, text, logo}], broken_text.
+   `logo` (optional) — path to brand logo image (e.g. assets/logos/chatgpt.png).
+   When present, replaces the av_letter character with an <img>. White bg circle.
+#}
+<template id="{{ id }}-template">
+  <div data-composition-id="{{ id }}" data-start="0" data-width="1200" data-height="1080">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      [data-composition-id="{{ id }}"] {
+        width: 100%; height: 100%;
+        background: #000; color: #f5f7fa;
+        position: relative; overflow: hidden;
+        font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased;
+      }
+      [data-composition-id="{{ id }}"] .bg-glow {
+        position: absolute; inset: 0; z-index: 0;
+        background:
+          radial-gradient(ellipse 600px 400px at 30% 40%, rgba(251,146,60,0.10), transparent 60%),
+          radial-gradient(ellipse 600px 400px at 75% 70%, rgba(167,139,250,0.08), transparent 60%);
+      }
+      [data-composition-id="{{ id }}"] .stage {
+        position: relative; z-index: 5; width: 100%; height: 100%;
+        padding: 130px 70px 80px; box-sizing: border-box;
+        display: flex; flex-direction: column; gap: 24px;
+      }
+      [data-composition-id="{{ id }}"] .eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 16px; font-weight: 600;
+        letter-spacing: 0.22em; text-transform: uppercase;
+        color: {{ eyebrow_color | default('#fb923c') }};
+        display: inline-flex; align-items: center; gap: 12px; align-self: flex-start;
+      }
+      [data-composition-id="{{ id }}"] .eyebrow .live { width: 8px; height: 8px; border-radius: 50%; background: {{ eyebrow_color | default('#fb923c') }}; box-shadow: 0 0 12px {{ eyebrow_color | default('#fb923c') }}; }
+      [data-composition-id="{{ id }}"] .title { font-weight: 800; font-size: 72px; line-height: 0.96; letter-spacing: -0.035em; margin: 0; will-change: transform, opacity; }
+      [data-composition-id="{{ id }}"] .title .word { display: inline-block; margin-right: 0.18em; will-change: transform, opacity; }
+      [data-composition-id="{{ id }}"] .title .grad-r { background: linear-gradient(135deg, #fb7185, #fb923c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+      [data-composition-id="{{ id }}"] .chats { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+      [data-composition-id="{{ id }}"] .chat-row {
+        display: grid; grid-template-columns: 90px 1fr;
+        gap: 18px; align-items: center;
+        background: rgba(15, 20, 30, 0.55);
+        border: 1.5px solid rgba(103, 232, 249, 0.30);
+        border-radius: 18px; padding: 16px 22px;
+        backdrop-filter: blur(14px);
+        box-shadow: 0 0 28px rgba(103, 232, 249, 0.08), inset 0 1px 0 rgba(255,255,255,0.04);
+        will-change: transform, opacity;
+      }
+      [data-composition-id="{{ id }}"] .chat-row.user { border-color: rgba(251, 146, 60, 0.40); box-shadow: 0 0 28px rgba(251,146,60,0.12), inset 0 1px 0 rgba(255,255,255,0.04); }
+      [data-composition-id="{{ id }}"] .chat-row.fail { border-color: rgba(251, 113, 133, 0.40); box-shadow: 0 0 28px rgba(251,113,133,0.10), inset 0 1px 0 rgba(255,255,255,0.04); }
+      [data-composition-id="{{ id }}"] .av { width: 70px; height: 70px; border-radius: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; justify-self: center; overflow: hidden; }
+      [data-composition-id="{{ id }}"] .av img { width: 56px; height: 56px; object-fit: contain; display: block; }
+      [data-composition-id="{{ id }}"] .av.you { background: #fb923c; color: #0b0f1a; box-shadow: 0 0 22px rgba(251,146,60,0.5); }
+      [data-composition-id="{{ id }}"] .av.gpt { background: #10a37f; color: #fff; box-shadow: 0 0 18px rgba(16,163,127,0.4); }
+      [data-composition-id="{{ id }}"] .av.gem { background: linear-gradient(135deg, #4285f4, #a855f7); color: #fff; box-shadow: 0 0 18px rgba(168,85,247,0.45); }
+      /* When .av carries an <img> brand logo, swap to white background so the colored logo reads clearly. */
+      [data-composition-id="{{ id }}"] .av.has-logo { background: #ffffff !important; box-shadow: 0 0 16px rgba(255,255,255,0.18); }
+      [data-composition-id="{{ id }}"] .body { display: flex; flex-direction: column; gap: 4px; }
+      [data-composition-id="{{ id }}"] .name { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #8b94a8; }
+      [data-composition-id="{{ id }}"] .chat-row.user .name { color: #fb923c; }
+      [data-composition-id="{{ id }}"] .chat-row.fail .name { color: #fb7185; }
+      [data-composition-id="{{ id }}"] .text { font-size: 22px; font-weight: 500; color: #e7ecf3; line-height: 1.4; }
+      [data-composition-id="{{ id }}"] .text b { color: #fff; font-weight: 700; }
+      [data-composition-id="{{ id }}"] .chat-row.fail .text { color: #b6bdcc; font-style: italic; }
+      [data-composition-id="{{ id }}"] .broken {
+        display: flex; align-items: center; justify-content: center; gap: 16px;
+        padding: 16px 24px;
+        border: 2px dashed #fb7185; border-radius: 16px;
+        background: rgba(251,113,133,0.08);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 20px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase;
+        color: #fb7185;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 0 30px rgba(251,113,133,0.18);
+        will-change: transform, opacity;
+      }
+      [data-composition-id="{{ id }}"] .broken .ico { font-size: 30px; }
+    </style>
+    <div class="bg-glow"></div>
+    <div class="stage">
+      <span class="eyebrow"><span class="live"></span>{{ kicker }}</span>
+      <h1 class="title">
+        {%- for w in heading_words -%}
+        <span class="word{% if w.grad %} grad-r{% endif %}">{{ w.text }}</span>
+        {%- endfor -%}
+      </h1>
+      <div class="chats">
+        <div class="chat-row user">
+          <div class="av you">B</div>
+          <div class="body">
+            <span class="name">BẠN</span>
+            <span class="text">{{ user_text | safe }}</span>
+          </div>
+        </div>
+        {%- for r in fail_rows -%}
+        <div class="chat-row fail" id="ch-{{ loop.index }}">
+          <div class="av {{ r.av }}{% if r.logo %} has-logo{% endif %}">
+            {%- if r.logo -%}
+            <img src="{{ r.logo }}" alt="{{ r.name }}">
+            {%- else -%}
+            {{ r.av_letter }}
+            {%- endif -%}
+          </div>
+          <div class="body">
+            <span class="name">{{ r.name }}</span>
+            <span class="text">{{ r.text | safe }}</span>
+          </div>
+        </div>
+        {%- endfor -%}
+        <div class="broken">
+          <span class="ico">⛓️‍💥</span>
+          <span>{{ broken_text }}</span>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const R = '[data-composition-id="{{ id }}"]';
+      tl.from(R + ' .eyebrow', { y: -20, opacity: 0, duration: 0.5, ease: 'power3.out' }, 0.1);
+      tl.from(R + ' .title .word', { y: 40, opacity: 0, scale: 0.85, duration: 0.5, ease: 'back.out(1.6)', stagger: 0.05 }, 0.4);
+      tl.from(R + ' .chat-row.user', { x: -60, opacity: 0, duration: 0.5, ease: 'power3.out' }, 1.5);
+      {%- for r in fail_rows %}
+      tl.from(R + ' #ch-{{ loop.index }}', { x: -60, opacity: 0, duration: 0.5, ease: 'power3.out' }, {{ 3.5 + (loop.index0 * 2.0) }});
+      {%- endfor %}
+      tl.from(R + ' .broken', { scale: 0.6, opacity: 0, duration: 0.5, ease: 'back.out(2)' }, {{ 3.5 + (fail_rows | length) * 2.0 + 0.5 }});
+      tl.to(R + ' .broken', { x: -8, duration: 0.08, yoyo: true, repeat: 5, ease: 'sine.inOut' }, {{ 3.5 + (fail_rows | length) * 2.0 + 1.0 }});
+      window.__timelines["{{ id }}"] = tl;
+    </script>
+{{ infographic_slot | default('') }}
+  </div>
+</template>

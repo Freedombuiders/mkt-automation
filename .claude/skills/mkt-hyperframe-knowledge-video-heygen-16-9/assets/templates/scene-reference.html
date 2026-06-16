@@ -1,0 +1,248 @@
+<!doctype html>
+<!--
+  ============================================================================
+  CANONICAL SCENE REFERENCE — 1200×1080 slide-pane sub-composition (hero pattern).
+  This is the DNA every scene sub-agent must mirror. PROVEN: renders inside a
+  .slide-mount, no text overflow, PIP re-centers cleanly.
+  Key mechanics to copy verbatim (only content/accents/layout change per scene):
+    - Full standalone HTML doc, loaded via data-composition-src (NOT inline <template>).
+    - Root: <div data-composition-id="scene-NN-slug" data-width="1200" data-height="1080">
+    - ALL css scoped under [data-composition-id="scene-NN-slug"]
+    - NO <script src=...gsap...> — relies on the master's global gsap.
+    - mulberry32 PRNG, unique seed 0x5cNN. No Math.random().
+    - gsap.fromTo() entrances, finite repeats, window.__timelines["scene-NN-slug"]=tl (paused).
+    - meta-badge top:92px left:56px (BELOW master brand-mark). NO top-right wordmark
+      (that corner is the avatar's). NO element past x≈1100px in split.
+  ============================================================================
+-->
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<title>Scene reference — 1200×1080 hero (slide pane)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #000; }
+  [data-composition-id="scene-01-hook"] {
+    width: 1200px; height: 1080px;
+    position: relative; overflow: hidden;
+    background:
+      radial-gradient(ellipse at 30% 18%, rgba(40,60,100,0.40) 0%, transparent 55%),
+      radial-gradient(ellipse at 72% 84%, rgba(217,119,87,0.22) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 50%, #0f1626 0%, #050810 70%, #02040a 100%);
+    color: #faf9f5;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  [data-composition-id="scene-01-hook"] .bokeh { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  [data-composition-id="scene-01-hook"] .bokeh span { position: absolute; display: block; border-radius: 50%; filter: blur(0.4px); opacity: 0; }
+
+  [data-composition-id="scene-01-hook"] .halo {
+    position: absolute; left: 50%; top: 44%;
+    width: 880px; height: 880px; transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(217,119,87,0.26) 0%, rgba(217,119,87,0.10) 32%, transparent 66%);
+    filter: blur(6px); z-index: 2; opacity: 0;
+  }
+
+  [data-composition-id="scene-01-hook"] .meta-badge {
+    position: absolute; top: 92px; left: 56px; z-index: 10;
+    padding: 11px 16px;
+    font: 500 13px/1 'JetBrains Mono', monospace;
+    letter-spacing: 0.18em; text-transform: uppercase; color: #b9c4d4;
+    background: rgba(15,22,38,0.62); border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 8px; backdrop-filter: blur(8px); opacity: 0;
+  }
+  [data-composition-id="scene-01-hook"] .meta-badge .dot { color: #d97757; margin-right: 8px; }
+  [data-composition-id="scene-01-hook"] .meta-badge .accent { color: #4fc3f7; }
+
+  [data-composition-id="scene-01-hook"] .stage {
+    position: absolute; inset: 0; z-index: 5;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 150px 80px 150px; box-sizing: border-box; text-align: center;
+  }
+
+  [data-composition-id="scene-01-hook"] .eyebrow {
+    font: 500 21px/1 'JetBrains Mono', monospace;
+    letter-spacing: 0.32em; text-transform: uppercase; color: #7cc4f0;
+    margin-bottom: 34px; opacity: 0;
+  }
+  [data-composition-id="scene-01-hook"] .eyebrow .divider { color: rgba(124,196,240,0.45); margin: 0 14px; }
+  [data-composition-id="scene-01-hook"] .eyebrow .coral { color: #d97757; }
+
+  [data-composition-id="scene-01-hook"] .hero {
+    font: 900 100px/0.94 'Inter', sans-serif;
+    letter-spacing: -0.035em; text-transform: uppercase;
+    margin: 0; display: flex; flex-wrap: wrap; align-items: baseline;
+    justify-content: center; gap: 0 22px;
+    text-shadow: 0 4px 70px rgba(255,255,255,0.05);
+  }
+  [data-composition-id="scene-01-hook"] .hero .word {
+    display: inline-block; opacity: 0; transform: translateY(56px);
+    will-change: transform, opacity; color: #faf9f5;
+  }
+  [data-composition-id="scene-01-hook"] .hero .accent { color: #d97757; }
+
+  [data-composition-id="scene-01-hook"] .underline {
+    width: 0; height: 5px;
+    background: linear-gradient(90deg, #4fc3f7 0%, #d97757 50%, #ffcb6b 100%);
+    border-radius: 3px; margin: 30px auto 38px;
+    box-shadow: 0 0 24px rgba(217,119,87,0.45);
+  }
+
+  [data-composition-id="scene-01-hook"] .backed {
+    font: 600 13px/1 'JetBrains Mono', monospace;
+    letter-spacing: 0.30em; text-transform: uppercase;
+    color: rgba(250,249,245,0.50); margin-bottom: 20px; opacity: 0;
+  }
+  [data-composition-id="scene-01-hook"] .brands {
+    display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 50px;
+  }
+  [data-composition-id="scene-01-hook"] .brands .chip {
+    font: 700 26px/1 'Inter', sans-serif; letter-spacing: -0.01em;
+    color: #faf9f5; padding: 14px 26px;
+    background: rgba(20,28,46,0.55); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px; backdrop-filter: blur(10px);
+    opacity: 0; transform: translateY(18px) scale(0.96); will-change: transform, opacity;
+  }
+
+  [data-composition-id="scene-01-hook"] .teaser {
+    display: flex; align-items: center; gap: 22px; opacity: 0;
+  }
+  [data-composition-id="scene-01-hook"] .teaser .pill {
+    font: 800 30px/1 'Inter', sans-serif; font-variant-numeric: tabular-nums;
+    color: #02040a; background: #ffcb6b; padding: 12px 22px; border-radius: 999px;
+    letter-spacing: -0.01em; box-shadow: 0 0 36px rgba(255,203,107,0.45); flex-shrink: 0;
+  }
+  [data-composition-id="scene-01-hook"] .teaser .label {
+    font: 500 21px/1.35 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em; color: rgba(250,249,245,0.80);
+    text-align: left; max-width: 560px;
+  }
+  [data-composition-id="scene-01-hook"] .teaser .label .strong { color: #faf9f5; font-weight: 700; }
+
+  [data-composition-id="scene-01-hook"] .corner-marks { position: absolute; inset: 40px; z-index: 6; pointer-events: none; }
+  [data-composition-id="scene-01-hook"] .corner-marks .m { position: absolute; width: 32px; height: 32px; border: 1px solid rgba(217,119,87,0.55); opacity: 0; }
+  [data-composition-id="scene-01-hook"] .corner-marks .tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+  [data-composition-id="scene-01-hook"] .corner-marks .bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+</style>
+</head>
+<body>
+
+<div id="scene-01-root" data-composition-id="scene-01-hook" data-width="1200" data-height="1080">
+
+  <div class="bokeh" aria-hidden="true"></div>
+  <div class="halo"></div>
+
+  <div class="corner-marks">
+    <div class="m tl"></div>
+    <div class="m bl"></div>
+  </div>
+
+  <div class="meta-badge">
+    <span class="dot">●</span> 01 / 08 <span class="accent">·</span> AI AGENCY
+  </div>
+
+  <div class="stage">
+    <div class="eyebrow">Y COMBINATOR <span class="divider">·</span> <span class="coral">MÔ HÌNH AGENCY MỚI</span></div>
+
+    <h1 class="hero">
+      <span class="word">AI</span>
+      <span class="word accent">AGENCY</span>
+      <span class="word">MODEL</span>
+    </h1>
+
+    <div class="underline"></div>
+
+    <div class="backed">Cái lò đẻ ra</div>
+    <div class="brands">
+      <div class="chip">Airbnb</div>
+      <div class="chip">Stripe</div>
+      <div class="chip">Dropbox</div>
+    </div>
+
+    <div class="teaser">
+      <div class="pill">2 PHÚT</div>
+      <div class="label">hướng <span class="strong">kiếm tiền với AI</span> đáng chú ý nhất lúc này</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  function mulberry32(seed) {
+    return function () {
+      let t = seed += 0x6D2B79F5;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  const root = document.querySelector('[data-composition-id="scene-01-hook"]');
+  const DURATION = 12.382;
+
+  (function seedBokeh() {
+    const rnd = mulberry32(0x5c01);
+    const layer = root.querySelector('.bokeh');
+    const colors = ['#4fc3f7', '#d97757', '#ffcb6b', '#80cbc4', '#7cc4f0'];
+    const N = 80;
+    for (let i = 0; i < N; i++) {
+      const d = document.createElement('span');
+      const size = 3 + rnd() * 10;
+      d.style.width = d.style.height = size + 'px';
+      d.style.background = colors[Math.floor(rnd() * colors.length)];
+      d.style.left = (rnd() * 100).toFixed(2) + '%';
+      d.style.top = (rnd() * 100).toFixed(2) + '%';
+      d.style.boxShadow = '0 0 ' + (size * 2.5).toFixed(1) + 'px ' + d.style.background;
+      layer.appendChild(d);
+    }
+  })();
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  tl.fromTo(root.querySelectorAll('.corner-marks .m'),
+    { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.6, ease: 'expo.out', stagger: 0.1 }, 0);
+  tl.fromTo(root.querySelector('.meta-badge'),
+    { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.2);
+
+  const bokehSpans = root.querySelectorAll('.bokeh span');
+  tl.to(bokehSpans, { opacity: 0.66, duration: 1.0, ease: 'sine.out', stagger: { each: 0.006, from: 'random' } }, 0.4);
+  const driftCycles = Math.max(0, Math.ceil(DURATION / 6) - 1);
+  bokehSpans.forEach((s, i) => {
+    const off = (((i * 37) % 80) - 40);
+    tl.to(s, { x: off, y: -off * 0.7, duration: 6, ease: 'sine.inOut', repeat: driftCycles, yoyo: true }, 1.0);
+  });
+
+  tl.fromTo(root.querySelector('.halo'),
+    { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 1.2, ease: 'expo.out' }, 0.8);
+
+  tl.fromTo(root.querySelector('.eyebrow'),
+    { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 1.1);
+
+  tl.fromTo(root.querySelectorAll('.hero .word'),
+    { opacity: 0, y: 56 }, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out', stagger: 0.14 }, 1.7);
+
+  tl.fromTo(root.querySelector('.underline'),
+    { width: 0 }, { width: 520, duration: 0.9, ease: 'expo.out' }, 3.2);
+
+  tl.fromTo(root.querySelector('.backed'),
+    { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, 3.9);
+  tl.fromTo(root.querySelectorAll('.brands .chip'),
+    { opacity: 0, y: 18, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: 'back.out(1.6)', stagger: 0.14 }, 4.2);
+
+  tl.fromTo(root.querySelector('.teaser'),
+    { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' }, 5.4);
+
+  const pulseCycles = Math.max(0, Math.ceil((DURATION - 6.5) / 3) - 1);
+  tl.to(root.querySelector('.halo'),
+    { opacity: 1.0, scale: 1.05, duration: 3, ease: 'sine.inOut', repeat: pulseCycles, yoyo: true }, 6.5);
+
+  window.__timelines["scene-01-hook"] = tl;
+})();
+</script>
+</body>
+</html>

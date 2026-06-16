@@ -1,0 +1,348 @@
+{# Root composition 1920×1080 — slide pane left + avatar floating right.
+   Vars:
+     title (str), brand_handle (str), brand_label (str),
+     total_duration (float, seconds),
+     sfx[{id, start, duration, src, volume, track_index}] (list, ≤6),
+     scenes[{id, src, start, duration, track_index, num, kind}] (list, 5),
+     pip_events[{in, out}] (list, derived from per-scene pip_events),
+     scene_starts (list of float),
+     scene_ranges[{num, start, end, kind}] (list — for body-punch routing),
+     broll_images[{num, start, end, file}] (list — cream-paper PIP-swap layer),
+     yt_lower_third (dict — { enable, start, duration } or None).
+
+   Visual hook ZOOM strategy: "Hybrid Hook" (Option 4)
+     - HOOK scene: slow ramp 1.0 → 1.10 over scene duration (drama build)
+     - HOOK→PROBLEM transition: snap reset 1.10 → 1.0 (release tension)
+     - BODY PIP-IN events (scenes 2..N-1): 1.06 punch beats (rhythm)
+     - CTA scene: gentle 1.0 → 1.04 (close push)
+     - Per-scene-start punch (1.06) on .avatar-punch layer remains for transitions.
+#}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title }} · 16:9</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #000000;
+      --ink: #f5f7fa;
+      --ink-mute: #8b94a8;
+      --line: rgba(255,255,255,0.10);
+      --cyan: #67e8f9;
+      --violet: #a78bfa;
+      --pink: #f0abfc;
+      --lime: #a3e635;
+      --orange: #fb923c;
+      --rose: #fb7185;
+    }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    [data-composition-id="root"] {
+      position: relative; width: 1920px; height: 1080px;
+      overflow: hidden; background: #000;
+    }
+    #heygen-bg {
+      position: absolute;
+      top: 0; left: 1200px;
+      width: 720px; height: 1080px;
+      background:
+        radial-gradient(ellipse 400px 600px at 0% 50%, rgba(251,146,60,0.10), transparent 60%),
+        #000;
+      z-index: 9;
+    }
+    #slide-bg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 1920px; height: 1080px;
+      background: #000;
+      z-index: 5;
+    }
+    #avatar-frame {
+      position: absolute;
+      top: 100px; left: 1290px;
+      width: 540px; height: 880px;
+      border-radius: 32px;
+      overflow: hidden;
+      background: #0a0e18;
+      border: none;
+      box-shadow:
+        0 30px 80px -20px rgba(0,0,0,0.85),
+        0 0 0 3px rgba(217,119,87,0.95),
+        0 0 0 6px rgba(217,119,87,0.30),
+        0 0 80px rgba(217,119,87,0.45);
+      z-index: 30;
+      will-change: top, left, width, height, border-radius, box-shadow;
+    }
+    .avatar-breathing { position: absolute; inset: 0; will-change: transform; }
+    .avatar-punch     { position: absolute; inset: 0; will-change: transform; }
+    #v-source {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center 25%;
+    }
+    .slide-mount {
+      position: absolute;
+      top: 0; left: 0;
+      width: 1200px; height: 1080px;
+      overflow: hidden;
+      background: transparent;
+      z-index: 20;
+      will-change: width;
+    }
+    .slide-mount > [data-composition-id] {
+      width: 100% !important; height: 100% !important;
+      position: absolute !important;
+      top: 0; left: 0;
+    }
+    /* === Cream-paper b-roll image layer (PIP-swap pattern) ===
+       Source: 16:9/16:10 cream-paper editorial illustrations.
+       During SPLIT mode: hidden. During PIP: full stage 1920×1080,
+       image centered with cream letterbox blending into image bg. */
+    .broll-image {
+      position: absolute;
+      top: 0; left: 0;
+      width: 1920px; height: 1080px;
+      object-fit: contain;
+      object-position: center;
+      opacity: 0;
+      z-index: 25;
+      will-change: opacity;
+      pointer-events: none;
+      background: #F0EEE6;
+    }
+    /* === YouTube subscribe lower-third (last few seconds) === */
+    .yt-lt-mount {
+      position: absolute;
+      top: 0; left: 0;
+      width: 1920px; height: 1080px;
+      overflow: visible;
+      background: transparent;
+      z-index: 60;
+      pointer-events: none;
+    }
+    .yt-lt-mount > [data-composition-id] {
+      width: 100% !important; height: 100% !important;
+      position: absolute !important;
+      top: 0; left: 0;
+      background: transparent !important;
+    }
+    /* === Captions overlay (phrase-by-phrase, bottom-center of stage) === */
+    .captions-mount {
+      position: absolute;
+      top: 0; left: 0;
+      width: 1920px; height: 1080px;
+      overflow: visible;
+      background: transparent;
+      z-index: 28;
+      pointer-events: none;
+    }
+    .captions-mount > [data-composition-id] {
+      width: 100% !important; height: 100% !important;
+      position: absolute !important;
+      top: 0; left: 0;
+      background: transparent !important;
+    }
+    .brand-mark {
+      position: absolute;
+      top: 40px; left: 60px;
+      z-index: 45;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600; font-size: 14px;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--ink-mute);
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+    .brand-mark .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 10px var(--lime); }
+    .brand-mark .at  { color: var(--pink); }
+    .brand-mark .sep { opacity: 0.4; }
+  </style>
+</head>
+<body>
+  <div data-composition-id="root" data-start="0" data-width="1920" data-height="1080">
+    <div id="slide-bg"></div>
+    <div id="heygen-bg"></div>
+
+    <div id="avatar-frame">
+      <div class="avatar-breathing">
+        <div class="avatar-punch">
+          <video id="v-source" data-start="0" data-duration="{{ total_duration }}"
+                 data-track-index="0" src="source.mp4" muted playsinline></video>
+        </div>
+      </div>
+    </div>
+    <audio id="a-source" data-start="0" data-duration="{{ total_duration }}"
+           data-track-index="1" data-volume="1" src="source.mp4"></audio>
+
+    <!-- SFX -->
+    {%- for s in sfx %}
+    <audio id="{{ s.id }}" data-start="{{ '%.2f'|format(s.start) }}" data-duration="{{ s.duration }}"
+           data-track-index="{{ s.track_index }}" data-volume="{{ s.volume }}" src="{{ s.src }}"></audio>
+    {%- endfor %}
+
+    <div id="brand-mark" class="clip brand-mark"
+         data-start="0" data-duration="{{ total_duration }}" data-track-index="2">
+      <span class="dot"></span>
+      <span><span class="at">@</span>{{ brand_handle }}</span>
+      <span class="sep">·</span>
+      <span>{{ brand_label }}</span>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ---- Initial entrance ----
+      tl.from("#avatar-frame", { scale: 0.95, opacity: 0, duration: 0.7, ease: 'power3.out', transformOrigin: 'center' }, 0);
+      tl.from("#brand-mark", { x: -20, opacity: 0, duration: 0.5, ease: 'power3.out' }, 0.3);
+
+      // ---- SPLIT ↔ PIP transitions ----
+      const SPLIT = { top: 100, left: 1290, width: 540, height: 880, borderRadius: 32 };
+      const PIP   = { top: 600, left: 1540, width: 320, height: 420, borderRadius: 20 };
+      const TRANS = 0.55;
+
+      function goPIP(t) {
+        tl.to('#avatar-frame', {
+          ...PIP,
+          boxShadow: '0 0 0 3px rgba(167,139,250,0.95), 0 0 0 6px rgba(167,139,250,0.35), 0 0 60px rgba(167,139,250,0.55), 0 16px 48px rgba(0,0,0,0.7)',
+          duration: TRANS, ease: 'power2.inOut',
+          overwrite: 'auto',
+        }, t);
+        tl.to('.slide-mount', {
+          width: 1920,
+          duration: TRANS, ease: 'power2.inOut',
+          overwrite: 'auto',
+        }, t);
+      }
+      function goSplit(t) {
+        tl.to('#avatar-frame', {
+          ...SPLIT,
+          boxShadow: '0 30px 80px -20px rgba(0,0,0,0.85), 0 0 0 3px rgba(217,119,87,0.95), 0 0 0 6px rgba(217,119,87,0.30), 0 0 80px rgba(217,119,87,0.45)',
+          duration: TRANS, ease: 'power2.inOut',
+          overwrite: 'auto',
+        }, t);
+        tl.to('.slide-mount', {
+          width: 1200,
+          duration: TRANS, ease: 'power2.inOut',
+          overwrite: 'auto',
+        }, t);
+      }
+
+      // ---- PIP emphasis moments ----
+      const PIP_EVENTS = [
+        {%- for e in pip_events %}
+        { in: {{ '%.2f'|format(e.in) }}, out: {{ '%.2f'|format(e.out) }} }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ];
+      PIP_EVENTS.forEach(e => { goPIP(e.in); goSplit(e.out); });
+
+      // ---- Cream-paper b-roll image PIP-swap fades ("split labor" architecture) ----
+      // HTML composition (slide-mount) carries DATA/STRUCTURE/LOGOS — always on.
+      // Broll image carries METAPHOR/EMOTION — fades in during PIP windows only.
+      const SCENE_RANGES = [
+        {%- for r in scene_ranges %}
+        { num: {{ r.num }}, start: {{ '%.2f'|format(r.start) }}, end: {{ '%.2f'|format(r.end) }} }{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ];
+      function sceneOf(t) {
+        return (SCENE_RANGES.find(s => t >= s.start && t < s.end) || SCENE_RANGES[0]).num;
+      }
+      const BROLL_FADE = 0.35;
+      PIP_EVENTS.forEach(e => {
+        const n = sceneOf(e.in);
+        tl.to(`#broll-${n}`, { opacity: 1, duration: BROLL_FADE, ease: 'power2.out', overwrite: 'auto' }, e.in);
+        tl.to(`#broll-${n}`, { opacity: 0, duration: BROLL_FADE, ease: 'power2.in',  overwrite: 'auto' }, e.out);
+      });
+
+      // ==== "Hybrid Hook" visual zoom strategy on .avatar-breathing ====
+      //  HOOK ramp → reset → BODY beats → CTA gentle.
+      {%- set hook = scene_ranges[0] if scene_ranges else None %}
+      {%- set last = scene_ranges[-1] if scene_ranges and scene_ranges|length > 1 else None %}
+      {%- set hook_dur = (hook.end - hook.start - 0.5) if hook else 12.0 %}
+      {%- set cta_dur = (last.end - last.start - 0.4) if last else 6.0 %}
+      // -- HOOK ramp 1.0 → 1.10 over hook scene duration (minus 0.5s for reset)
+      tl.fromTo('.avatar-breathing',
+        { scale: 1.0 },
+        { scale: 1.10, duration: {{ '%.2f'|format(hook_dur) }}, ease: 'power2.in', transformOrigin: 'center center' },
+        {{ '%.2f'|format(hook.start) if hook else 0.07 }}
+      );
+      // -- HOOK→BODY snap reset 1.10 → 1.0 (0.5s before scene 2 boundary)
+      tl.to('.avatar-breathing', {
+        scale: 1.0, duration: 0.5, ease: 'power3.in', transformOrigin: 'center center',
+      }, {{ '%.2f'|format((hook.end - 0.5) if hook else 13.23) }});
+      // -- BODY beat punches 1.0 → 1.06 → 1.0 at PIP-IN of scenes 2..N-1
+      const BODY_PUNCH_EVENTS = PIP_EVENTS
+        .filter(e => sceneOf(e.in) >= 2 && sceneOf(e.in) <= SCENE_RANGES.length - 1)
+        .map(e => e.in);
+      BODY_PUNCH_EVENTS.forEach(t => {
+        tl.to('.avatar-breathing', {
+          scale: 1.06, duration: 0.35, ease: 'power2.out',
+          transformOrigin: 'center center', overwrite: 'auto',
+        }, t);
+        tl.to('.avatar-breathing', {
+          scale: 1.0, duration: 0.7, ease: 'power3.out',
+          transformOrigin: 'center center', overwrite: 'auto',
+        }, t + 0.5);
+      });
+      // -- CTA gentle push 1.0 → 1.04 over cta scene duration
+      {%- if last %}
+      tl.to('.avatar-breathing', {
+        scale: 1.04, duration: {{ '%.2f'|format(cta_dur) }}, ease: 'sine.inOut',
+        transformOrigin: 'center center',
+      }, {{ '%.2f'|format(last.start) }});
+      {%- endif %}
+
+      // ---- Avatar PUNCH-IN at each scene start (small beat) ----
+      const SCENE_STARTS = [{% for t in scene_starts %}{{ '%.2f'|format(t) }}{% if not loop.last %}, {% endif %}{% endfor %}];
+      SCENE_STARTS.forEach(t => {
+        tl.to('.avatar-punch', {
+          scale: 1.06, duration: 0.35, ease: 'power2.out',
+          transformOrigin: 'center center', overwrite: 'auto',
+        }, t);
+        tl.to('.avatar-punch', {
+          scale: 1.0, duration: 0.7, ease: 'power3.out', overwrite: 'auto',
+        }, t + 0.45);
+      });
+
+      window.__timelines["root"] = tl;
+    </script>
+
+    <!-- ============ SCENE SLIDE MOUNTS ============ -->
+    {%- for s in scenes %}
+    <div class="clip slide-mount" data-composition-src="{{ s.src }}" data-start="{{ '%.2f'|format(s.start) }}" data-duration="{{ '%.2f'|format(s.duration) }}" data-composition-id="{{ s.id }}" data-track-index="{{ s.track_index }}"></div>
+    {%- endfor %}
+
+    {%- if broll_images %}
+    <!-- ============ CREAM-PAPER B-ROLL IMAGES (PIP-swap pattern) ============
+         Each <img> lives at full stage, fades in during PIP windows for its scene.
+         When N.png hasn't been rendered yet, <img> stays at opacity 0 (no flicker). -->
+    {%- for b in broll_images %}
+    <img class="broll-image" id="broll-{{ b.num }}" src="{{ b.file }}" alt="scene-{{ b.num }} b-roll" data-scene-num="{{ b.num }}" data-scene-start="{{ '%.2f'|format(b.start) }}" data-scene-end="{{ '%.2f'|format(b.end) }}">
+    {%- endfor %}
+    {%- endif %}
+
+    {%- if captions and captions.enable %}
+    <!-- ============ CAPTIONS overlay (phrase-by-phrase, full duration) ============ -->
+    <div class="clip captions-mount" data-composition-src="compositions/captions.html"
+         data-start="0" data-duration="{{ '%.2f'|format(total_duration) }}"
+         data-composition-id="captions" data-track-index="55"></div>
+    {%- endif %}
+
+    {%- if yt_lower_third and yt_lower_third.enable %}
+    <!-- ============ YT SUBSCRIBE LOWER-THIRD (final {{ '%.1f'|format(yt_lower_third.duration) }}s) ============ -->
+    <div class="clip yt-lt-mount" data-composition-src="compositions/yt-lower-third.html"
+         data-start="{{ '%.2f'|format(yt_lower_third.start) }}" data-duration="{{ '%.2f'|format(yt_lower_third.duration) }}"
+         data-composition-id="yt-lower-third" data-track-index="45"></div>
+    {%- endif %}
+  </div>
+</body>
+</html>

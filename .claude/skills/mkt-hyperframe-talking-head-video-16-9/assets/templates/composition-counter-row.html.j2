@@ -1,0 +1,92 @@
+{# counter-row pattern — Recap (FROM → TO + clients).
+   Vars: id, kicker, heading_words, eyebrow_color, big_letter,
+         counter_label, from_value, to_value, unit,
+         clients[{av,title,sub}], delta_text.
+#}
+<template id="{{ id }}-template">
+  <div data-composition-id="{{ id }}" data-start="0" data-width="1200" data-height="1080">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      [data-composition-id="{{ id }}"] { width: 100%; height: 100%; background: #000; color: #f5f7fa; position: relative; overflow: hidden; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+      [data-composition-id="{{ id }}"] .bg-glow { position: absolute; inset: 0; z-index: 0; background: radial-gradient(ellipse 700px 500px at 50% 30%, rgba(163,230,53,0.14), transparent 60%), radial-gradient(ellipse 600px 400px at 30% 80%, rgba(103,232,249,0.10), transparent 60%); }
+      [data-composition-id="{{ id }}"] .stage { position: relative; z-index: 5; width: 100%; height: 100%; padding: 130px 70px 80px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px; }
+      [data-composition-id="{{ id }}"] .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: {{ eyebrow_color | default('#a3e635') }}; display: inline-flex; align-items: center; gap: 12px; align-self: flex-start; }
+      [data-composition-id="{{ id }}"] .eyebrow .live { width: 8px; height: 8px; border-radius: 50%; background: {{ eyebrow_color | default('#a3e635') }}; box-shadow: 0 0 12px {{ eyebrow_color | default('#a3e635') }}; }
+      [data-composition-id="{{ id }}"] .title { font-weight: 800; font-size: 80px; line-height: 0.96; letter-spacing: -0.035em; margin: 0; will-change: transform, opacity; }
+      [data-composition-id="{{ id }}"] .title .word { display: inline-block; margin-right: 0.18em; will-change: transform, opacity; }
+      [data-composition-id="{{ id }}"] .title .grad-l { background: linear-gradient(135deg, #a3e635, #67e8f9); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+      [data-composition-id="{{ id }}"] .counter-row { display: grid; grid-template-columns: 130px 1fr; gap: 24px; align-items: center; background: rgba(15, 20, 30, 0.55); border: 1.5px solid rgba(163, 230, 53, 0.40); border-radius: 22px; padding: 22px 28px; backdrop-filter: blur(14px); box-shadow: 0 0 36px rgba(163, 230, 53, 0.16), inset 0 1px 0 rgba(255,255,255,0.04); will-change: transform, opacity; }
+      [data-composition-id="{{ id }}"] .tier-letter { font-weight: 900; font-size: 64px; letter-spacing: -0.04em; line-height: 1; text-align: center; color: #a3e635; text-shadow: 0 0 28px rgba(163,230,53,0.85), 0 0 12px rgba(163,230,53,0.6); }
+      [data-composition-id="{{ id }}"] .counter-content { display: flex; flex-direction: column; gap: 6px; }
+      [data-composition-id="{{ id }}"] .counter-label { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase; color: #a3e635; }
+      [data-composition-id="{{ id }}"] .counter { display: flex; align-items: baseline; gap: 18px; }
+      [data-composition-id="{{ id }}"] .counter .from { position: relative; font-size: 56px; font-weight: 900; color: #8b94a8; letter-spacing: -0.04em; line-height: 1; }
+      [data-composition-id="{{ id }}"] .counter .from::after { content: ""; position: absolute; left: -8%; right: -8%; top: 56%; height: 4px; background: #fb7185; border-radius: 3px; transform: scaleX(0); transform-origin: left center; will-change: transform; }
+      [data-composition-id="{{ id }}"] .counter .arr { font-size: 36px; color: #a3e635; font-weight: 600; }
+      [data-composition-id="{{ id }}"] .counter .to { font-size: 96px; font-weight: 900; letter-spacing: -0.05em; line-height: 1; background: linear-gradient(135deg, #a3e635, #67e8f9); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      [data-composition-id="{{ id }}"] .counter .u { font-family: 'JetBrains Mono', monospace; font-size: 16px; color: #8b94a8; text-transform: uppercase; letter-spacing: 0.18em; align-self: flex-end; margin-bottom: 8px; }
+
+      [data-composition-id="{{ id }}"] .clients { display: flex; gap: 14px; }
+      [data-composition-id="{{ id }}"] .client { flex: 1; display: grid; grid-template-columns: 70px 1fr; gap: 14px; align-items: center; padding: 14px 20px; background: rgba(15, 20, 30, 0.55); border: 1.5px solid rgba(103, 232, 249, 0.40); border-radius: 18px; backdrop-filter: blur(14px); box-shadow: 0 0 28px rgba(103, 232, 249, 0.10), inset 0 1px 0 rgba(255,255,255,0.04); will-change: transform, opacity; }
+      [data-composition-id="{{ id }}"] .client .av { width: 50px; height: 50px; border-radius: 14px; background: linear-gradient(135deg, #a78bfa, #67e8f9); display: inline-flex; align-items: center; justify-content: center; color: #0b0f1a; font-weight: 800; font-size: 22px; box-shadow: 0 0 18px rgba(103,232,249,0.4); justify-self: center; }
+      [data-composition-id="{{ id }}"] .client .col { display: flex; flex-direction: column; gap: 2px; }
+      [data-composition-id="{{ id }}"] .client .ttl { font-size: 20px; font-weight: 700; color: #f5f7fa; }
+      [data-composition-id="{{ id }}"] .client .sb { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #a3e635; letter-spacing: 0.12em; font-weight: 700; }
+      [data-composition-id="{{ id }}"] .delta { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: #a3e635; background: rgba(163,230,53,0.10); border: 1.5px solid rgba(163,230,53,0.45); border-radius: 14px; padding: 14px 24px; letter-spacing: 0.10em; backdrop-filter: blur(12px); align-self: flex-start; box-shadow: 0 0 28px rgba(163,230,53,0.18); will-change: transform, opacity; }
+    </style>
+    <div class="bg-glow"></div>
+    <div class="stage">
+      <span class="eyebrow"><span class="live"></span>{{ kicker }}</span>
+      <h1 class="title">
+        {%- for w in heading_words -%}
+        <span class="word{% if w.grad %} grad-l{% endif %}">{{ w.text }}</span>
+        {%- endfor -%}
+      </h1>
+      <div class="counter-row">
+        <div class="tier-letter">{{ big_letter }}</div>
+        <div class="counter-content">
+          <span class="counter-label">{{ counter_label }}</span>
+          <div class="counter">
+            <span class="from">{{ from_value }}</span>
+            <span class="arr">→</span>
+            <span class="to">{{ to_value }}</span>
+            <span class="u">{{ unit }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="clients">
+        {%- for c in clients -%}
+        <div class="client" id="cl{{ loop.index }}">
+          <div class="av">{{ c.av }}</div>
+          <div class="col"><span class="ttl">{{ c.title }}</span><span class="sb">{{ c.sub }}</span></div>
+        </div>
+        {%- endfor -%}
+      </div>
+      <div class="delta">{{ delta_text }}</div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const R = '[data-composition-id="{{ id }}"]';
+      tl.from(R + ' .eyebrow', { y: -20, opacity: 0, duration: 0.4, ease: 'power3.out' }, 0.05);
+      tl.from(R + ' .title .word', { y: 40, opacity: 0, scale: 0.85, duration: 0.5, ease: 'back.out(1.6)', stagger: 0.05 }, 0.25);
+      tl.from(R + ' .counter-row', { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out' }, 0.9);
+      tl.from(R + ' .tier-letter', { scale: 0, opacity: 0, duration: 0.5, ease: 'back.out(1.8)' }, 1.1);
+      tl.from(R + ' .counter .from', { x: -20, opacity: 0, duration: 0.4 }, 1.3);
+      tl.fromTo(R + ' .counter .from::after', { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: 'power2.out' }, 1.6);
+      tl.from(R + ' .counter .arr', { scale: 0, opacity: 0, duration: 0.3, ease: 'back.out(2)' }, 1.8);
+      tl.from(R + ' .counter .to', { scale: 0.5, opacity: 0, duration: 0.6, ease: 'back.out(1.8)' }, 2.0);
+      {%- for c in clients %}
+      tl.from(R + ' #cl{{ loop.index }}', { y: 30, opacity: 0, duration: 0.45, ease: 'power3.out' }, {{ 2.5 + (loop.index0 * 0.2) }});
+      {%- endfor %}
+      tl.from(R + ' .delta', { y: 20, opacity: 0, duration: 0.45, ease: 'back.out(1.6)' }, 3.0);
+      tl.to(R + ' .delta', { boxShadow: '0 0 40px rgba(163,230,53,0.5)', duration: 0.8, ease: 'sine.inOut', yoyo: true, repeat: 3 }, 3.3);
+      window.__timelines["{{ id }}"] = tl;
+    </script>
+{{ infographic_slot | default('') }}
+  </div>
+</template>

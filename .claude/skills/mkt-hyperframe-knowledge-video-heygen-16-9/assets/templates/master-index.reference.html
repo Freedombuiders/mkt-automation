@@ -1,0 +1,277 @@
+<!doctype html>
+<!--
+  ============================================================================
+  MASTER index.html REFERENCE — proven working (rendered clean: 0 errors).
+  Copy into project as index.html, then REPLACE only the marked bits:
+    [1] <title>                               → project title
+    [2] data-duration="110.570" everywhere    → ffprobe duration of FINAL re-encoded source.mp4
+    [3] SFX <audio> block (track 70+)         → SFX hits at beat moments (references/sfx-layer.md)
+    [4] scene mounts m1..mN (track 40+)       → 1 per beat, data-start/duration from beats.json (NO overlap)
+    [5] transitions[] array                   → wipe/flash at a FEW major boundaries (not all)
+    [6] PIP_EVENTS[]                           → from pip-schedule.json (emphasis beats only)
+    [7] SCENE_STARTS[]                         → beat.start_ms/1000 from beats.json (skip t=0)
+    [8] TOTAL const                            → same as [2]
+  DO NOT touch: the CSS, avatar-frame DOM, #root selector, breathing/punch
+  logic, the data-layout-allow-overflow attrs, the gsap 3.14.2 CDN tag.
+  Those are exactly the parts that passed lint + inspect.
+  ============================================================================
+-->
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<title>REPLACE-WITH-TITLE — Knowledge Keynote 16:9</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #02040a; font-family: 'Inter', sans-serif; }
+
+  #root {
+    position: relative; width: 1920px; height: 1080px;
+    overflow: hidden; background: #000;
+  }
+
+  /* Full-canvas black base */
+  #slide-bg {
+    position: absolute; top: 0; left: 0;
+    width: 1920px; height: 1080px;
+    background: #000; z-index: 5;
+  }
+
+  /* Warm side-light behind avatar (right pane) */
+  #heygen-bg {
+    position: absolute; top: 0; left: 1200px;
+    width: 720px; height: 1080px;
+    background:
+      radial-gradient(ellipse 420px 640px at 0% 50%, rgba(217,119,87,0.14), transparent 62%),
+      #000;
+    z-index: 9;
+  }
+
+  /* Slide pane mounts (left). width animatable 1200<->1920 for PIP. */
+  .slide-mount {
+    position: absolute; top: 0; left: 0;
+    width: 1200px; height: 1080px;
+    overflow: hidden; background: transparent;
+    z-index: 20; opacity: 0;
+    will-change: width, opacity;
+  }
+  .slide-mount > [data-composition-id] {
+    width: 100% !important; height: 100% !important;
+    position: absolute !important; top: 0; left: 0;
+  }
+
+  /* Scene wipe / flash overlays (slide pane) */
+  #scene-wipe {
+    position: absolute; top: 0; bottom: 0; left: -220px;
+    width: 160px; z-index: 50; opacity: 0; pointer-events: none;
+  }
+  #scene-wipe.coral { background: linear-gradient(90deg, transparent, #d97757 50%, transparent); box-shadow: 0 0 160px 36px rgba(217,119,87,0.55); }
+  #scene-wipe.cyan  { background: linear-gradient(90deg, transparent, #4fc3f7 50%, transparent); box-shadow: 0 0 160px 36px rgba(79,195,247,0.55); }
+  #scene-wipe.cream { background: linear-gradient(90deg, transparent, #faf9f5 50%, transparent); box-shadow: 0 0 160px 36px rgba(255,255,255,0.42); }
+  #scene-flash {
+    position: absolute; top: 0; left: 0; width: 1200px; height: 1080px;
+    background: #faf9f5; z-index: 51; opacity: 0; pointer-events: none;
+    mix-blend-mode: screen;
+  }
+
+  /* Avatar floating frame (right). animatable for SPLIT<->PIP. */
+  #avatar-frame {
+    position: absolute;
+    top: 100px; left: 1290px;
+    width: 540px; height: 880px;
+    border-radius: 32px;
+    overflow: hidden;
+    background: #0a0e18;
+    border: 3px solid #d97757;
+    box-shadow:
+      0 0 0 6px rgba(217,119,87,0.18),
+      0 0 80px rgba(217,119,87,0.35),
+      0 30px 80px -20px rgba(0,0,0,0.8);
+    z-index: 30;
+    opacity: 0;
+    will-change: top, left, width, height, border-radius, box-shadow, border-color;
+  }
+  .avatar-breathing { position: absolute; inset: 0; will-change: transform; }
+  .avatar-punch     { position: absolute; inset: 0; will-change: transform; }
+  #v-source {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center 22%;
+  }
+
+  /* Brand mark top-left (text only) */
+  #brand-mark {
+    position: absolute; top: 40px; left: 60px; z-index: 45;
+    font: 600 14px/1 'JetBrains Mono', monospace;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: #8b95a8;
+    display: inline-flex; align-items: center; gap: 10px;
+    opacity: 0;
+  }
+  #brand-mark .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #d97757; box-shadow: 0 0 10px #d97757;
+  }
+  #brand-mark .at  { color: #f48fb1; }
+  #brand-mark .sep { opacity: 0.4; }
+</style>
+</head>
+<body>
+
+<div id="root" data-composition-id="main" data-start="0" data-duration="110.570" data-width="1920" data-height="1080">
+
+  <!-- backdrops -->
+  <div id="slide-bg"></div>
+  <div id="heygen-bg"></div>
+
+  <!-- avatar audio (drives voiceover) -->
+  <audio id="a-source" class="clip" data-start="0" data-duration="110.570" data-track-index="1" data-volume="1.0" src="source.mp4"></audio>
+
+  <!-- SFX layer (track 70+) -->
+  <audio id="sfx-hook-flash"  class="clip" data-start="0.20"   data-duration="1.6" data-track-index="70" data-volume="0.42" src="assets/sfx/camera-flash.mp3"></audio>
+  <audio id="sfx-hook-ting"   class="clip" data-start="7.90"   data-duration="0.95" data-track-index="71" data-volume="0.42" src="assets/sfx/ting.mp3"></audio>
+  <audio id="sfx-problem-sus" class="clip" data-start="12.60"  data-duration="1.30" data-track-index="72" data-volume="0.45" src="assets/sfx/SUDDEN SUSPENSE.mp3"></audio>
+  <audio id="sfx-flip-whoosh" class="clip" data-start="21.30"  data-duration="1.00" data-track-index="73" data-volume="0.48" src="assets/sfx/Whoosh sound effect (1).mp3"></audio>
+  <audio id="sfx-flip-boom"   class="clip" data-start="25.40"  data-duration="1.30" data-track-index="74" data-volume="0.50" src="assets/sfx/boom.mp3"></audio>
+  <audio id="sfx-econ-ting"   class="clip" data-start="30.00"  data-duration="0.95" data-track-index="75" data-volume="0.40" src="assets/sfx/ting.mp3"></audio>
+  <audio id="sfx-econ-wow"    class="clip" data-start="45.80"  data-duration="2.30" data-track-index="76" data-volume="0.45" src="assets/sfx/Wow.mp3"></audio>
+  <audio id="sfx-serv-whoosh" class="clip" data-start="49.70"  data-duration="1.00" data-track-index="77" data-volume="0.45" src="assets/sfx/Whoosh sound effect (1).mp3"></audio>
+  <audio id="sfx-serv-disc1"  class="clip" data-start="55.20"  data-duration="0.86" data-track-index="78" data-volume="0.40" src="assets/sfx/Discord Notification - Sound Effect.mp3"></audio>
+  <audio id="sfx-steps-snap"  class="clip" data-start="76.30"  data-duration="0.30" data-track-index="79" data-volume="0.45" src="assets/sfx/búng tay.mp3"></audio>
+  <audio id="sfx-hormozi-lung" class="clip" data-start="92.90" data-duration="1.70" data-track-index="80" data-volume="0.42" src="assets/sfx/lung linh.mp3"></audio>
+  <audio id="sfx-cta-boom"    class="clip" data-start="102.10" data-duration="1.30" data-track-index="81" data-volume="0.50" src="assets/sfx/boom.mp3"></audio>
+
+  <!-- scene mounts (slide pane) — track 40+ -->
+  <div id="m1" class="clip slide-mount" data-start="0"        data-duration="12.382" data-track-index="40" data-composition-id="scene-01-hook"      data-composition-src="scenes/scene-01-hook.html"></div>
+  <div id="m2" class="clip slide-mount" data-start="12.382"   data-duration="9.108"  data-track-index="41" data-composition-id="scene-02-problem"   data-composition-src="scenes/scene-02-problem.html"></div>
+  <div id="m3" class="clip slide-mount" data-start="21.490"   data-duration="8.177"  data-track-index="42" data-composition-id="scene-03-flip"      data-composition-src="scenes/scene-03-flip.html"></div>
+  <div id="m4" class="clip slide-mount" data-start="29.667"   data-duration="20.245" data-track-index="43" data-composition-id="scene-04-economics" data-composition-src="scenes/scene-04-economics.html"></div>
+  <div id="m5" class="clip slide-mount" data-start="49.912"   data-duration="26.245" data-track-index="44" data-composition-id="scene-05-services" data-composition-src="scenes/scene-05-services.html"></div>
+  <div id="m6" class="clip slide-mount" data-start="76.157"   data-duration="14.016" data-track-index="45" data-composition-id="scene-06-steps"     data-composition-src="scenes/scene-06-steps.html"></div>
+  <div id="m7" class="clip slide-mount" data-start="90.173"   data-duration="11.760" data-track-index="46" data-composition-id="scene-07-hormozi"   data-composition-src="scenes/scene-07-hormozi.html"></div>
+  <div id="m8" class="clip slide-mount" data-start="101.933"  data-duration="8.637"  data-track-index="47" data-composition-id="scene-08-cta"       data-composition-src="scenes/scene-08-cta.html"></div>
+
+  <!-- slide-pane transition overlays -->
+  <div id="scene-wipe" class="clip coral" data-start="0" data-duration="110.570" data-track-index="55"></div>
+  <div id="scene-flash" class="clip" data-start="0" data-duration="110.570" data-track-index="56"></div>
+
+  <!-- avatar frame -->
+  <div id="avatar-frame">
+    <div class="avatar-breathing" data-layout-allow-overflow>
+      <div class="avatar-punch" data-layout-allow-overflow>
+        <video id="v-source" class="clip" data-start="0" data-duration="110.570" data-track-index="0" src="source.mp4" muted playsinline></video>
+      </div>
+    </div>
+  </div>
+
+  <!-- brand mark -->
+  <div id="brand-mark" class="clip" data-start="0" data-duration="110.570" data-track-index="2">
+    <span class="dot"></span>
+    <span><span class="at">@</span>tranvanhoang.com</span>
+    <span class="sep">·</span>
+    <span>Knowledge AI</span>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  const TOTAL = 110.570;
+
+  // ---- Initial entrance ----
+  tl.fromTo('#avatar-frame', { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.7, ease: 'power3.out', transformOrigin: 'center' }, 0);
+  tl.fromTo('#brand-mark', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.5, ease: 'power3.out' }, 0.3);
+
+  // ---- Scene mounts: fade in at each start; later scenes cover earlier ones ----
+  const mounts = [
+    { id: '#m1', start: 0       },
+    { id: '#m2', start: 12.382  },
+    { id: '#m3', start: 21.490  },
+    { id: '#m4', start: 29.667  },
+    { id: '#m5', start: 49.912  },
+    { id: '#m6', start: 76.157  },
+    { id: '#m7', start: 90.173  },
+    { id: '#m8', start: 101.933 },
+  ];
+  mounts.forEach((m) => {
+    tl.fromTo(m.id, { opacity: 0 }, { opacity: 1, duration: 0.55, ease: 'power2.out', overwrite: 'auto' }, m.start);
+  });
+
+  // ---- Wipe / flash at a few major boundaries ----
+  const transitions = [
+    { end: 12.382, color: 'coral', dir: 'ltr', flash: true  },
+    { end: 29.667, color: 'cyan',  dir: 'rtl', flash: false },
+    { end: 49.912, color: 'cream', dir: 'ltr', flash: true  },
+    { end: 90.173, color: 'coral', dir: 'rtl', flash: false },
+    { end: 101.933,color: 'cream', dir: 'ltr', flash: true  },
+  ];
+  transitions.forEach(({ end, color, dir, flash }) => {
+    const t0 = end - 0.20;
+    tl.set('#scene-wipe', { className: 'clip ' + color }, t0);
+    if (dir === 'ltr') {
+      tl.fromTo('#scene-wipe', { x: -220, opacity: 0 }, { x: 1360, opacity: 1, duration: 0.55, ease: 'power2.inOut', overwrite: 'auto' }, t0);
+    } else {
+      tl.fromTo('#scene-wipe', { x: 1360, opacity: 0 }, { x: -220, opacity: 1, duration: 0.55, ease: 'power2.inOut', overwrite: 'auto' }, t0);
+    }
+    tl.to('#scene-wipe', { opacity: 0, duration: 0.15, ease: 'power2.out', overwrite: 'auto' }, t0 + 0.45);
+    tl.set('#scene-wipe', { opacity: 0 }, t0 + 0.62);
+    if (flash) {
+      tl.fromTo('#scene-flash', { opacity: 0 }, { opacity: 0.38, duration: 0.08, ease: 'power2.out', overwrite: 'auto' }, t0 + 0.18);
+      tl.to('#scene-flash', { opacity: 0, duration: 0.22, ease: 'power2.in', overwrite: 'auto' }, t0 + 0.26);
+      tl.set('#scene-flash', { opacity: 0 }, t0 + 0.50);
+    }
+  });
+
+  // ---- SPLIT <-> PIP ----
+  const SPLIT = { top: 100, left: 1290, width: 540, height: 880, borderRadius: 32 };
+  const PIP   = { top: 600, left: 1540, width: 320, height: 420, borderRadius: 20 };
+  const TRANS = 0.55;
+  function goPIP(t) {
+    tl.to('#avatar-frame', { ...PIP, borderColor: '#a78bfa',
+      boxShadow: '0 0 0 6px rgba(167,139,250,0.20), 0 0 60px rgba(167,139,250,0.40), 0 16px 48px rgba(0,0,0,0.7)',
+      duration: TRANS, ease: 'power2.inOut', overwrite: 'auto' }, t);
+    tl.to('.slide-mount', { width: 1920, duration: TRANS, ease: 'power2.inOut', overwrite: 'auto' }, t);
+  }
+  function goSplit(t) {
+    tl.to('#avatar-frame', { ...SPLIT, borderColor: '#d97757',
+      boxShadow: '0 0 0 6px rgba(217,119,87,0.18), 0 0 80px rgba(217,119,87,0.35), 0 30px 80px -20px rgba(0,0,0,0.8)',
+      duration: TRANS, ease: 'power2.inOut', overwrite: 'auto' }, t);
+    tl.to('.slide-mount', { width: 1200, duration: TRANS, ease: 'power2.inOut', overwrite: 'auto' }, t);
+  }
+  const PIP_EVENTS = [
+    { in: 8.00,   out: 11.50  },
+    { in: 25.40,  out: 28.60  },
+    { in: 45.80,  out: 49.00  },
+    { in: 93.00,  out: 96.50  },
+    { in: 104.00, out: 108.40 },
+  ];
+  PIP_EVENTS.forEach(e => { goPIP(e.in); goSplit(e.out); });
+
+  // ---- Breathing (subtle yoyo) ----
+  tl.to('.avatar-breathing', { scale: 1.025, duration: 4.5, ease: 'sine.inOut',
+    yoyo: true, repeat: Math.max(1, Math.ceil(TOTAL / 9) - 1), transformOrigin: 'center center' }, 1);
+
+  // ---- Punch-in at each scene start ----
+  const SCENE_STARTS = [12.382, 21.490, 29.667, 49.912, 76.157, 90.173, 101.933];
+  SCENE_STARTS.forEach(t => {
+    tl.to('.avatar-punch', { scale: 1.06, duration: 0.35, ease: 'power2.out', transformOrigin: 'center center', overwrite: 'auto' }, t);
+    tl.to('.avatar-punch', { scale: 1.0, duration: 0.7, ease: 'power3.out', overwrite: 'auto' }, t + 0.45);
+  });
+
+  // ---- Final fade ----
+  tl.to(['#m8', '#avatar-frame', '#brand-mark'], { opacity: 0, duration: 0.5, ease: 'power2.in', overwrite: 'auto' }, TOTAL - 0.5);
+
+  window.__timelines["main"] = tl;
+})();
+</script>
+
+</body>
+</html>

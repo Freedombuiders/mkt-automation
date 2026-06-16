@@ -1,0 +1,32 @@
+# Cream-paper editorial infographic prompts — {{ slug }}
+
+Generated for project `{{ slug }}`. Total scenes: {{ scenes | length }}.
+
+**Style language (apply to every prompt):**
+- Cream-paper background `#F0EEE6` with subtle paper grain
+- Dark slate ink `#0F172A` for line work and text annotations
+- Hand-drawn line-art editorial illustration style
+- Single accent (cyan/violet/orange/lime — pick per scene)
+- Whiteboard / engineering notebook aesthetic — looks drawn, not rendered
+- Aspect ratio 1:1, transparent if possible (PNG)
+- NO photographic elements; NO 3D; NO digital glow
+- Hand-lettered headlines OK; minimal small caption text
+
+Generate via `mkt-broll-image` skill or manual Nano Banana / Midjourney. Save outputs as `infographics/1.png` … `infographics/{{ scenes | length }}.png` next to this file. Compositions auto-pick them up.
+
+---
+
+{% for s in scenes %}
+## Scene {{ s.num }} — {{ s.kind }} · {{ s.variant }}
+
+**Heading:** {{ s.heading }}
+**Kicker:** {{ s.kicker }}
+
+**Prompt:**
+> Hand-drawn editorial infographic on cream paper (`#F0EEE6`), dark slate ink line work. {{ s.metaphor_prompt }} Single accent color {{ s.accent_color }}. No 3D, no digital glow, no photo realism. Square 1:1 PNG, transparent background if possible. Style: engineering notebook, whiteboard sketch, Anthropic Claude editorial illustration.
+
+**File:** `infographics/{{ s.num }}.png`
+
+---
+
+{% endfor %}

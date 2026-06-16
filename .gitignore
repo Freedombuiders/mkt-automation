@@ -1,0 +1,36 @@
+# --- Secrets: NEVER commit ---
+.env
+.env.*
+!.env.example
+*.key
+*credential*
+*secret*
+
+# --- Generated video artifacts / large media ---
+workspace/
+b-rolls/
+*.mp4
+*.mov
+*.mp3
+*.wav
+*.webm
+
+# --- Node / build ---
+node_modules/
+dist/
+build/
+.cache/
+out/
+
+# --- Python ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/

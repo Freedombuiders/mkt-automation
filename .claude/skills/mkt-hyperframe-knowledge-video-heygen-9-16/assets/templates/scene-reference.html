@@ -1,0 +1,224 @@
+<!doctype html>
+<!--
+  ============================================================================
+  CANONICAL SCENE REFERENCE — 1080×960 TOP-PANE sub-composition (hero pattern).
+  This is the DNA every scene sub-agent must mirror for the 9:16 FULL↔SPLIT
+  pipeline. The scene shows in the TOP HALF while the HeyGen avatar sits in
+  the BOTTOM HALF (master handles the split — the scene never knows about it).
+  Key mechanics to copy verbatim (only content/accents/layout change per scene):
+    - Full standalone HTML doc, loaded via data-composition-src (NOT inline <template>).
+    - Root: <div data-composition-id="scene-NN-slug" data-width="1080" data-height="960">
+    - ALL css scoped under [data-composition-id="scene-NN-slug"]
+    - NO <script src=...gsap...> — relies on the master's global gsap.
+    - mulberry32 PRNG, unique seed 0x5cNN. No Math.random().
+    - gsap.fromTo() entrances, finite repeats, window.__timelines["scene-NN-slug"]=tl (paused).
+    - meta-badge top:92px left:48px (BELOW master brand-mark at top:40).
+    - Canvas is SHORT (960px tall): hero 64-84px, vertical rhythm tight,
+      NO element below y≈900px (divider + captions zone).
+    - Content flex-centered. Captions overlay the bottom half (avatar), not
+      this pane — do not leave space for them.
+  ============================================================================
+-->
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<title>Scene reference — 1080×960 hero (top pane)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #000; }
+  [data-composition-id="scene-01-hook"] {
+    width: 1080px; height: 960px;
+    position: relative; overflow: hidden;
+    background:
+      radial-gradient(ellipse at 30% 18%, rgba(40,60,100,0.40) 0%, transparent 55%),
+      radial-gradient(ellipse at 72% 84%, rgba(217,119,87,0.22) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 50%, #0f1626 0%, #050810 70%, #02040a 100%);
+    color: #faf9f5;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  [data-composition-id="scene-01-hook"] .bokeh { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  [data-composition-id="scene-01-hook"] .bokeh span { position: absolute; display: block; border-radius: 50%; filter: blur(0.4px); opacity: 0; }
+
+  [data-composition-id="scene-01-hook"] .halo {
+    position: absolute; left: 50%; top: 48%;
+    width: 700px; height: 700px; transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(217,119,87,0.26) 0%, rgba(217,119,87,0.10) 32%, transparent 66%);
+    filter: blur(6px); z-index: 2; opacity: 0;
+  }
+
+  [data-composition-id="scene-01-hook"] .meta-badge {
+    position: absolute; top: 92px; left: 48px; z-index: 10;
+    padding: 10px 15px;
+    font: 500 13px/1 'JetBrains Mono', monospace;
+    letter-spacing: 0.18em; text-transform: uppercase; color: #b9c4d4;
+    background: rgba(15,22,38,0.62); border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 8px; backdrop-filter: blur(8px); opacity: 0;
+  }
+  [data-composition-id="scene-01-hook"] .meta-badge .dot { color: #d97757; margin-right: 8px; }
+  [data-composition-id="scene-01-hook"] .meta-badge .accent { color: #4fc3f7; }
+
+  [data-composition-id="scene-01-hook"] .stage {
+    position: absolute; inset: 0; z-index: 5;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 130px 70px 70px; box-sizing: border-box; text-align: center;
+  }
+
+  [data-composition-id="scene-01-hook"] .eyebrow {
+    font: 500 19px/1 'JetBrains Mono', monospace;
+    letter-spacing: 0.30em; text-transform: uppercase; color: #7cc4f0;
+    margin-bottom: 26px; opacity: 0;
+  }
+  [data-composition-id="scene-01-hook"] .eyebrow .divider { color: rgba(124,196,240,0.45); margin: 0 12px; }
+  [data-composition-id="scene-01-hook"] .eyebrow .coral { color: #d97757; }
+
+  [data-composition-id="scene-01-hook"] .hero {
+    font: 900 80px/0.94 'Inter', sans-serif;
+    letter-spacing: -0.035em; text-transform: uppercase;
+    margin: 0; display: flex; flex-wrap: wrap; align-items: baseline;
+    justify-content: center; gap: 0 18px;
+    text-shadow: 0 4px 70px rgba(255,255,255,0.05);
+  }
+  [data-composition-id="scene-01-hook"] .hero .word {
+    display: inline-block; opacity: 0; transform: translateY(46px);
+    will-change: transform, opacity; color: #faf9f5;
+  }
+  [data-composition-id="scene-01-hook"] .hero .accent { color: #d97757; }
+
+  [data-composition-id="scene-01-hook"] .underline {
+    width: 0; height: 5px;
+    background: linear-gradient(90deg, #4fc3f7 0%, #d97757 50%, #ffcb6b 100%);
+    border-radius: 3px; margin: 24px auto 30px;
+    box-shadow: 0 0 24px rgba(217,119,87,0.45);
+  }
+
+  [data-composition-id="scene-01-hook"] .teaser {
+    display: flex; align-items: center; gap: 18px; opacity: 0;
+  }
+  [data-composition-id="scene-01-hook"] .teaser .pill {
+    font: 800 26px/1 'Inter', sans-serif; font-variant-numeric: tabular-nums;
+    color: #02040a; background: #ffcb6b; padding: 11px 20px; border-radius: 999px;
+    letter-spacing: -0.01em; box-shadow: 0 0 36px rgba(255,203,107,0.45); flex-shrink: 0;
+  }
+  [data-composition-id="scene-01-hook"] .teaser .label {
+    font: 500 19px/1.35 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em; color: rgba(250,249,245,0.80);
+    text-align: left; max-width: 520px;
+  }
+  [data-composition-id="scene-01-hook"] .teaser .label .strong { color: #faf9f5; font-weight: 700; }
+
+  [data-composition-id="scene-01-hook"] .corner-marks { position: absolute; inset: 36px; z-index: 6; pointer-events: none; }
+  [data-composition-id="scene-01-hook"] .corner-marks .m { position: absolute; width: 28px; height: 28px; border: 1px solid rgba(217,119,87,0.55); opacity: 0; }
+  [data-composition-id="scene-01-hook"] .corner-marks .tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+  [data-composition-id="scene-01-hook"] .corner-marks .tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+</style>
+</head>
+<body>
+
+<div id="scene-01-root" data-composition-id="scene-01-hook" data-width="1080" data-height="960">
+
+  <div class="bokeh" aria-hidden="true"></div>
+  <div class="halo"></div>
+
+  <div class="corner-marks">
+    <div class="m tl"></div>
+    <div class="m tr"></div>
+  </div>
+
+  <div class="meta-badge">
+    <span class="dot">●</span> 01 / 05 <span class="accent">·</span> TOPIC LABEL
+  </div>
+
+  <div class="stage">
+    <div class="eyebrow">EYEBROW LINE <span class="divider">·</span> <span class="coral">ACCENT PART</span></div>
+
+    <h1 class="hero">
+      <span class="word">HERO</span>
+      <span class="word accent">TITLE</span>
+      <span class="word">HERE</span>
+    </h1>
+
+    <div class="underline"></div>
+
+    <div class="teaser">
+      <div class="pill">KEY STAT</div>
+      <div class="label">supporting line với <span class="strong">điểm nhấn</span> ở đây</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  function mulberry32(seed) {
+    return function () {
+      let t = seed += 0x6D2B79F5;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  const root = document.querySelector('[data-composition-id="scene-01-hook"]');
+  const DURATION = 8.460; // = brollEnd - start (mount window), NOT full beat
+
+  (function seedBokeh() {
+    const rnd = mulberry32(0x5c01);
+    const layer = root.querySelector('.bokeh');
+    const colors = ['#4fc3f7', '#d97757', '#ffcb6b', '#80cbc4', '#7cc4f0'];
+    const N = 70;
+    for (let i = 0; i < N; i++) {
+      const d = document.createElement('span');
+      const size = 3 + rnd() * 9;
+      d.style.width = d.style.height = size + 'px';
+      d.style.background = colors[Math.floor(rnd() * colors.length)];
+      d.style.left = (rnd() * 100).toFixed(2) + '%';
+      d.style.top = (rnd() * 100).toFixed(2) + '%';
+      d.style.boxShadow = '0 0 ' + (size * 2.5).toFixed(1) + 'px ' + d.style.background;
+      layer.appendChild(d);
+    }
+  })();
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  tl.fromTo(root.querySelectorAll('.corner-marks .m'),
+    { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.6, ease: 'expo.out', stagger: 0.1 }, 0);
+  tl.fromTo(root.querySelector('.meta-badge'),
+    { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.2);
+
+  const bokehSpans = root.querySelectorAll('.bokeh span');
+  tl.to(bokehSpans, { opacity: 0.66, duration: 1.0, ease: 'sine.out', stagger: { each: 0.006, from: 'random' } }, 0.3);
+  const driftCycles = Math.max(0, Math.ceil(DURATION / 6) - 1);
+  bokehSpans.forEach((s, i) => {
+    const off = (((i * 37) % 70) - 35);
+    tl.to(s, { x: off, y: -off * 0.7, duration: 6, ease: 'sine.inOut', repeat: driftCycles, yoyo: true }, 0.8);
+  });
+
+  tl.fromTo(root.querySelector('.halo'),
+    { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 1.1, ease: 'expo.out' }, 0.5);
+
+  tl.fromTo(root.querySelector('.eyebrow'),
+    { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out' }, 0.7);
+
+  tl.fromTo(root.querySelectorAll('.hero .word'),
+    { opacity: 0, y: 46 }, { opacity: 1, y: 0, duration: 0.75, ease: 'expo.out', stagger: 0.13 }, 1.1);
+
+  tl.fromTo(root.querySelector('.underline'),
+    { width: 0 }, { width: 440, duration: 0.85, ease: 'expo.out' }, 2.3);
+
+  tl.fromTo(root.querySelector('.teaser'),
+    { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, 3.0);
+
+  const pulseCycles = Math.max(0, Math.ceil((DURATION - 4.0) / 3) - 1);
+  tl.to(root.querySelector('.halo'),
+    { opacity: 1.0, scale: 1.05, duration: 3, ease: 'sine.inOut', repeat: pulseCycles, yoyo: true }, 4.0);
+
+  window.__timelines["scene-01-hook"] = tl;
+})();
+</script>
+</body>
+</html>
