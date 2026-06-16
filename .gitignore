@@ -1,6 +1,4 @@
 # --- Secrets: NEVER commit ---
-.env
-.env.*
 !.env.example
 *.key
 *credential*
@@ -34,3 +32,4 @@ Thumbs.db
 *.log
 .idea/
 .vscode/
+config.bat
